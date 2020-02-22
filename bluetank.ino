@@ -55,7 +55,7 @@ void blueReport(String s) {
 void setup() {
     Serial.begin(115200);
     serprintln("serial initialized");
-    BTSerial.begin(115200); //6 38400,  57600 7, 115200 8
+    BTSerial.begin(115200); //6 38400,  57600 7, 115200 8  AT+BAUD8
 
     for (int i = 0; i < 2; i++) {
       for(int k = 0; k < 2; k++) {
