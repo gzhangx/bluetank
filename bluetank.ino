@@ -55,7 +55,7 @@ void blueReport(String s) {
 void setup() {
     Serial.begin(115200);
     serprintln("serial initialized");
-    BTSerial.begin(9600);
+    BTSerial.begin(115200); //6 38400,  57600 7, 115200 8
 
     for (int i = 0; i < 2; i++) {
       for(int k = 0; k < 2; k++) {
@@ -92,6 +92,7 @@ String curBtName = "";
 void loop_bt() {  
   while (BTSerial.available()){
         int c = BTSerial.read();
+        Serial.write(c);
         if (receivePos < BT_BUF_LEN) {
           receiveStr[receivePos++] = (char)c;
           receiveStr[receivePos] = 0;
@@ -117,22 +118,10 @@ void loop_bt() {
         //Serial.write(c);
   }
   // Keep reading from Arduino Serial Monitor and send to HC-05
-  if (Serial.available()){
+  while(Serial.available()){
     int c = Serial.read();
-    sendstr[sendstrpos++] =c;
-    if (sendstrpos > 100) sendstrpos = 100;
-    sendstr[sendstrpos] =0;    
-    lastAvailableTime = millis();    
-  }else {
-    if (sendstrpos && (millis()-lastAvailableTime)>500  ) {
-      for (int i = 0; i < sendstrpos; i++)
-        BTSerial.write(sendstr[i]);   
-      BTSerial.write('\r');  
-      BTSerial.write('\n');
-      Serial.println(sendstr);
-      sendstrpos = 0;
-    }
-    
+    Serial.write(c);
+    BTSerial.write(c);      
   }
 }
 
