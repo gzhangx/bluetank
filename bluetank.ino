@@ -26,6 +26,8 @@ void serprintln(String s) {
   if (Serial) Serial.println(s);           
 }
 
+int pint4 = LOW;
+
 String blueReportStr = "";
 String curWorkingBlueReportStr = "";
 int curWorkingBlueReportStrProg=0;
@@ -57,6 +59,7 @@ void setup() {
     serprintln("serial initialized");
     BTSerial.begin(115200); //6 38400,  57600 7, 115200 8  AT+BAUD8
 
+    pinMode(4, OUTPUT);
     for (int i = 0; i < 2; i++) {
       for(int k = 0; k < 2; k++) {
         int cur = motorPins[i][k];
@@ -83,6 +86,9 @@ void btCmdReceived(String cmd, String name, String val) {
   if (cmd == "r")  {
     motorSpeed[1] = val.toInt();
     blueReport("r="+String(motorSpeed[1]));
+  }
+  if (cmd == "pin4") {
+     digitalWrite(4, val.toInt());
   }
 }
 char receiveStr[BT_BUF_LEN+16];
@@ -122,6 +128,11 @@ void loop_bt() {
     int c = Serial.read();
     Serial.write(c);
     BTSerial.write(c);      
+    if (c == '4') {
+      pint4 = !pint4;
+      Serial.print(String(pint4));
+       digitalWrite(4, pint4);
+    }
   }
 }
 
