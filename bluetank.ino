@@ -6,7 +6,11 @@
 
 #include "SoftwareSerial.h"
 const int BLUEINT = 3;
-SoftwareSerial BTSerial(BLUEINT,10); // blue tx, blue rx
+const int FIREPIN = 9;
+int FIREPINTIMER = 0;
+byte curFirePinState = 0;
+unsigned long lastFirePinCheck = millis();
+SoftwareSerial BTSerial(BLUEINT,4); // blue tx, blue rx
 
 const int BT_BUF_LEN=128;
 char sendstr[BT_BUF_LEN+16];
@@ -26,7 +30,7 @@ void serprintln(String s) {
   if (Serial) Serial.println(s);           
 }
 
-int pint4 = LOW;
+int pin9 = LOW;
 
 String blueReportStr = "";
 String curWorkingBlueReportStr = "";
@@ -59,7 +63,7 @@ void setup() {
     serprintln("serial initialized");
     BTSerial.begin(115200); //6 38400,  57600 7, 115200 8  AT+BAUD8
 
-    pinMode(4, OUTPUT);
+    pinMode(FIREPIN, OUTPUT);
     for (int i = 0; i < 2; i++) {
       for(int k = 0; k < 2; k++) {
         int cur = motorPins[i][k];
@@ -75,6 +79,25 @@ void loop() {
   //loop_motor();
   loop_run();
   actualStateBlueReport();
+  firePinCheck();
+}
+
+void firePinCheck() {
+  if (FIREPINTIMER <= 0) {
+    lastFirePinCheck = millis();
+    FIREPINTIMER = 0;
+    if (curFirePinState)    
+      digitalWrite(FIREPIN, 0);
+    curFirePinState = 0;
+    return;
+  }
+  if (!curFirePinState) {
+     digitalWrite(FIREPIN, 1);
+     curFirePinState = 1;
+  }
+  unsigned long curtm = millis();
+  FIREPINTIMER -= (curtm - lastFirePinCheck);
+  lastFirePinCheck = curtm;
 }
 
 void btCmdReceived(String cmd, String name, String val) {  
@@ -87,8 +110,8 @@ void btCmdReceived(String cmd, String name, String val) {
     motorSpeed[1] = val.toInt();
     blueReport("r="+String(motorSpeed[1]));
   }
-  if (cmd == "pin4") {
-     digitalWrite(4, val.toInt());
+  if (cmd == "pin9") {
+     FIREPINTIMER =  val.toInt();
   }
 }
 char receiveStr[BT_BUF_LEN+16];
@@ -128,10 +151,9 @@ void loop_bt() {
     int c = Serial.read();
     Serial.write(c);
     BTSerial.write(c);      
-    if (c == '4') {
-      pint4 = !pint4;
-      Serial.print(String(pint4));
-       digitalWrite(4, pint4);
+    if (c == '9') {
+      FIREPINTIMER = 1000;
+       
     }
   }
 }
