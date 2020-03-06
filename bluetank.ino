@@ -5,7 +5,9 @@
  */
 
 #include "SoftwareSerial.h"
-const int BLUEINT = 3;
+const int BTBAUD = 19200;  //tank 115200, test 19200 //5 19200 //6 38400,  57600 7, 115200 8  AT+BAUD8
+const int SERBAUD = 19200; //tank 115200, test 19200
+const int BLUEINT = 3;    //tank 3, test 2
 const int FIREPIN = 9;
 int FIREPINTIMER = 0;
 byte curFirePinState = 0;
@@ -59,9 +61,9 @@ void blueReport(String s) {
 }
 
 void setup() {
-    Serial.begin(115200);
+    Serial.begin(SERBAUD);
     serprintln("serial initialized");
-    BTSerial.begin(115200); //6 38400,  57600 7, 115200 8  AT+BAUD8
+    BTSerial.begin(BTBAUD);  //5 19200 //6 38400,  57600 7, 115200 8  AT+BAUD8
 
     pinMode(FIREPIN, OUTPUT);
     for (int i = 0; i < 2; i++) {
