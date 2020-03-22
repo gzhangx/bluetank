@@ -5,7 +5,7 @@
  */
 
 #include "SoftwareSerial.h"
-const int BTBAUD = 115200;  //tank 115200, test 19200 //5 19200 //6 38400,  57600 7, 115200 8  AT+BAUD8
+const int BTBAUD = 57600;  //tank 115200, test 19200 //5 19200 //6 38400,  57600 7, 115200 8  AT+BAUD8
 const int SERBAUD = 115200; //tank 115200, test 19200
 const int BLUEINT = 3;    //tank 3, test 2
 const int FIREPIN = 9;
