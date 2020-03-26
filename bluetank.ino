@@ -5,52 +5,15 @@
  */
 
 #include "SoftwareSerial.h"
+#include "GArduinoBufUtil.h"
 const long BTBAUD = 57600;  //tank 115200, test 19200 //5 19200 //6 38400,  57600 7, 115200 8  AT+BAUD8
 const long SERBAUD = 115200; //tank 115200, test 19200
 const int BLUEINT = 3;    //tank 3, test 2
-const int FIREPIN = 9;
+const int FIREPIN = 10;
 int FIREPINTIMER = 0;
 byte curFirePinState = 0;
 unsigned long lastFirePinCheck = millis();
 SoftwareSerial BTSerial(BLUEINT,4); // blue tx, blue rx
-
-const int BT_BUF_LEN=128;
-
-class RecBuf{  
-    char receiveStr[BT_BUF_LEN+16];
-    int receivePos = 0;
-    int cmdNamePos = -1;
-    public:
-    String cmd = ""; 
-    String val = "";
-    String origVal = "";
-    bool onRecv(int c) {
-      if (receivePos < BT_BUF_LEN) {
-          receiveStr[receivePos++] = (char)c;
-          receiveStr[receivePos] = 0;
-          if (c == ':') {
-            cmdNamePos = receivePos;
-          }
-          if (c== '\n') {
-            receiveStr[receivePos-1]=0;
-            if (receivePos >= 2 && receiveStr[receivePos-2] =='\r')receiveStr[receivePos-2]= 0;
-            receivePos = 0;
-            origVal = receiveStr;
-            if (cmdNamePos >=0) {
-              cmd = origVal.substring(0,cmdNamePos-1);
-              val = origVal.substring(cmdNamePos);
-            }else {
-              val = origVal;
-            }
-            cmdNamePos = -1;
-            return true;
-          }
-        }else {
-          receivePos = 0; //warning, over flow
-        }
-        return false;
-    }
-};
 
 RecBuf serBuf, blueBuf;
 unsigned long lastAvailableTime = millis();
@@ -68,7 +31,6 @@ void serprintln(String s) {
   Serial.println(s);           
 }
 
-int pin9 = LOW;
 
 String blueReportStr = "";
 String curWorkingBlueReportStr = "";
@@ -154,7 +116,7 @@ void btCmdReceived(RecBuf *buf) {
     motorSpeed[1] = val.toInt();
     blueReport("r="+String(motorSpeed[1]));
   }
-  if (cmd == "pin9") {
+  if (cmd == "f") {
      FIREPINTIMER =  val.toInt();
   }
 }
@@ -163,7 +125,7 @@ void btCmdReceived(RecBuf *buf) {
 void loop_bt() {  
   if (BTSerial.available()){
         int c = BTSerial.read();
-        if (blueBuf.onRecv(c)) {
+        if (blueBuf.onRecv(c,'|')) {
           btCmdReceived(&blueBuf);
         }
   }
